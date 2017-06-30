@@ -6,4 +6,3 @@ Reads mp3 files in the source directory and rewrites id3 tags based on file name
 
 ### Note
 The path of the source directory is hard-coded into the program and must be modified for each individual person. I did this as my music gets downloaded to a specific folder automatically and I therefore do not require to change this path on the fly.
-Moreover, note this does not use the `os.path` module and will therefore only work on UNIX-like environments due to how paths are defined.
