@@ -12,8 +12,10 @@ from mutagen.easyid3 import EasyID3
 import re
 import os
 import shutil
+import per_tools
 
-invalid = re.compile('audio|premiere|original|official|lyric', re.IGNORECASE)
+invalid = re.compile('audio|premiere|original|official|lyric|' +
+                     'records|exclusive', re.IGNORECASE)
 feat = re.compile(' feat | feat. | ft ', re.IGNORECASE)
 feat_bis = re.compile('\(feat |\(feat. |\(ft ', re.IGNORECASE)
 
@@ -24,9 +26,14 @@ def run():
     tag_list = {}
 
     try:
-        os.mkdir(os.path.join(destination, '_invalid'))
+        os.mkdir(os.path.join(source, '_invalid'))
     except:
         print("_invalid directory already exists.")
+
+    # Set up progress bar
+    print("Preparing for file copying ...")
+    iteration = 0
+    per_tools.print_progress_bar(iteration, len(files))
 
     for file in files:
         # Change file name and replace feat flag with 'ft.'
@@ -37,7 +44,7 @@ def run():
 
         tags = re.split(' - ', file)
         if re.search(invalid, file) or len(tags) != 2:
-            os.rename(file, os.path.join(destination, "_invalid", file))
+            os.rename(file, os.path.join(source, "_invalid", file))
             files.remove(file)
         else:
             tag_list[file] = EasyID3(file)
@@ -47,15 +54,21 @@ def run():
             tag_list[file]['artist'] = artist_name
 
             # Process song title
-            title_name = tags[1].strip()
+            title_name = tags[1][:-4].strip()
             tag_list[file]['title'] = title_name
             tag_list[file].save()
 
             try:
                 os.mkdir(os.path.join(destination, tags[0]))
             except:
-                print("Artist folder \'%s\' already exists." % tags[0])
+                pass
             shutil.copy2(file, os.path.join(destination, tags[0], file))
+
+        iteration += 1
+        per_tools.print_progress_bar(iteration, len(files))
+
+    print("Copy complete")
+
 
 if __name__ == "__main__":
     save_dir = os.getcwd()
